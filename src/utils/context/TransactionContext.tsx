@@ -1,5 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
+import { createContext, useContext } from 'react';
+import { useQuery, useMutation, useQueryClient } from 'react-query';
 
 interface Transaction {
   id: number;
@@ -9,38 +9,33 @@ interface Transaction {
   amount: number;
 }
 
-interface TransactionContextType {
-  transactions: Transaction[];
-  //eslint-disable-next-line
-  mutation: any;
-}
+//eslint-disable-next-line
+const TransactionContext = createContext<any>(null);
 
-const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
-
-export const TransactionProvider = ({ children }: { children: ReactNode }) => {
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
+export const TransactionProvider = ({ children }: { children: React.ReactNode }) => {
   const queryClient = useQueryClient();
 
-  const mutation = useMutation<Transaction[], unknown, Transaction[]>((newTransactions) => {
-    setTransactions((prev) => [...prev, ...newTransactions]);
+  const { data: transactions, isLoading } = useQuery<Transaction[]>('transactions', () =>
+    Promise.resolve([]) // Initial empty array
+  );
+
+  const mutation = useMutation((newTransactions: Transaction[]) => {
     return Promise.resolve(newTransactions);
   }, {
-    onSuccess: () => {
-      queryClient.invalidateQueries('transactions');
+    onSuccess: (newTransactions) => {
+      queryClient.setQueryData('transactions', (old: Transaction[] | undefined) => {
+        return [...(old || []), ...newTransactions];
+      });
     }
   });
 
   return (
-    <TransactionContext.Provider value={{ transactions, mutation }}>
+    <TransactionContext.Provider value={{ transactions, isLoading, mutation }}>
       {children}
     </TransactionContext.Provider>
   );
 };
 
 export const useTransactions = () => {
-  const context = useContext(TransactionContext);
-  if (context === undefined) {
-    throw new Error('useTransactions must be used within a TransactionProvider');
-  }
-  return context;
+  return useContext(TransactionContext);
 };
