@@ -1,6 +1,20 @@
-import { Button, Input, Select, useToast } from '@chakra-ui/react';
-import { useEffect, useState } from 'react';
-import { useDisclosure } from '@chakra-ui/react';
+import React, { useState, useEffect } from 'react';
+import {
+  Button,
+  Input,
+  Select,
+  useToast,
+  Modal,
+  ModalOverlay,
+  ModalContent,
+  ModalHeader,
+  ModalCloseButton,
+  ModalBody,
+  ModalFooter,
+  Checkbox,
+  Stack,
+  useDisclosure,
+} from '@chakra-ui/react';
 import { parse } from 'papaparse';
 import { Transaction, useTransactions } from '../../../utils/context/TransactionContext';
 import './MainHeader.css';
@@ -13,11 +27,18 @@ interface MainHeaderProps {
   dataToExport: IServerTransactionData[];
 }
 
-export const MainHeader: React.FC<MainHeaderProps> = ({ onUpload, onStatusChange, onTypeChange, dataToExport }) => {
+export const MainHeader: React.FC<MainHeaderProps> = ({
+  onUpload,
+  onStatusChange,
+  onTypeChange,
+  dataToExport,
+}) => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [file, setFile] = useState<File | null>(null);
   const { mutation } = useTransactions();
   const toast = useToast();
+  const [showModal, setShowModal] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState<(keyof IServerTransactionData)[]>([]);
 
   useEffect(() => {
     return () => {
@@ -56,9 +77,10 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ onUpload, onStatusChange
   };
 
   const convertToCSV = (data: IServerTransactionData[]) => {
-    const header = Object.keys(data[0]);
+    // Ensure dataToExport[0] is defined before mapping over its keys
+    const header = dataToExport.length > 0 ? Object.keys(dataToExport[0]) as (keyof IServerTransactionData)[] : [];
     const csv = [
-      header.join(','), // Header row
+      header.join(','),
       ...data.map((row) => header.map((fieldName) => JSON.stringify(row[fieldName])).join(',')),
     ].join('\r\n');
     return csv;
@@ -85,6 +107,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ onUpload, onStatusChange
       parse(file, {
         complete: (result) => {
           console.log('Parsed CSV:', result.data);
+          //eslint-disable-next-line
           const transactions = result.data.map((tx: any) => ({
             id: tx.TransactionId,
             status: tx.Status,
@@ -108,6 +131,14 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ onUpload, onStatusChange
       onClose();
       onUpload();
       setFile(null); // Reset the file input after upload
+    }
+  };
+
+  const handleColumnToggle = (column: keyof IServerTransactionData) => {
+    if (selectedColumns.includes(column)) {
+      setSelectedColumns(selectedColumns.filter((col) => col !== column));
+    } else {
+      setSelectedColumns([...selectedColumns, column]);
     }
   };
 
@@ -138,7 +169,38 @@ export const MainHeader: React.FC<MainHeaderProps> = ({ onUpload, onStatusChange
         <option value='withdrawal'>Withdrawal</option>
       </Select>
       <Button className='btn' onClick={onOpen}>Import</Button>
-      <Button className='btn' onClick={handleExport}>Export</Button>
+      <Button className='btn' onClick={() => setShowModal(true)}>Export</Button>
+
+      {/* Modal for column selection */}
+      <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Export Columns</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <Stack spacing={2}>
+              {dataToExport.length > 0 && Object.keys(dataToExport[0]).map((column) => (
+                <Checkbox
+                  key={column}
+                  isChecked={selectedColumns.includes(column as keyof IServerTransactionData)}
+                  onChange={() => handleColumnToggle(column as keyof IServerTransactionData)}
+                >
+                  {column}
+                </Checkbox>
+              ))}
+            </Stack>
+          </ModalBody>
+          <ModalFooter>
+            <Button colorScheme='blue' mr={3} onClick={() => {
+              handleExport();
+              setShowModal(false);
+            }}>
+              Export
+            </Button>
+            <Button onClick={() => setShowModal(false)}>Cancel</Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </div>
   );
 };

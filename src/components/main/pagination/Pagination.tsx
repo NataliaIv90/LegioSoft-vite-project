@@ -14,18 +14,38 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, itemsPerPag
     if (!totalItems) return;
     return (
         <ButtonGroup variant="outline" spacing="6" className="pagination">
-            <Button onClick={() => onPageChange(1)} disabled={currentPage === 1}>First</Button>
-            <Button onClick={() => onPageChange(currentPage - 1)} disabled={currentPage === 1}>Previous</Button>
+            <Button
+                onClick={() => onPageChange(1)} isDisabled={currentPage === 1}>First</Button>
+            <Button
+                onClick={() => {
+                    if (currentPage > 1) onPageChange(currentPage - 1)
+                }}
+                isDisabled={currentPage === 1}
+            >
+                Previous
+            </Button>
+
             {Array.from({ length: totalPages }, (_, index) => (
                 <Button
                     key={index + 1}
                     onClick={() => onPageChange(index + 1)}
-                    disabled={currentPage === index + 1}>
+                    isDisabled={currentPage === index + 1}
+                    isActive={currentPage === index + 1}
+                >
                     {index + 1}
                 </Button>
             ))}
-            <Button onClick={() => onPageChange(currentPage + 1)} disabled={currentPage === totalPages}>Next</Button>
-            <Button onClick={() => onPageChange(totalPages)} disabled={currentPage === totalPages}>Last</Button>
+
+            <Button
+                onClick={() => {
+                    if (currentPage < totalPages) onPageChange(currentPage + 1)
+                }}
+                isDisabled={currentPage === totalPages}
+            >Next</Button>
+            <Button
+                onClick={() => onPageChange(totalPages)}
+                isDisabled={currentPage === totalPages}
+            >Last</Button>
         </ButtonGroup>
     );
 };
