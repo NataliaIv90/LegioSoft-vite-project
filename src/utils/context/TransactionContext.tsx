@@ -1,7 +1,8 @@
-import { createContext, useContext } from 'react';
+import { createContext, useContext, ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from 'react-query';
+import { fetchTransactions, postTransactions } from '../transactionUtils';
 
-interface Transaction {
+export interface Transaction {
   id: number;
   status: string;
   type: string;
@@ -9,23 +10,24 @@ interface Transaction {
   amount: number;
 }
 
-//eslint-disable-next-line
-const TransactionContext = createContext<any>(null);
+interface TransactionContextType {
+  transactions: Transaction[] | undefined;
+  isLoading: boolean;
+  mutation: {
+    mutate: (transactions: Transaction[]) => void;
+  };
+}
 
-export const TransactionProvider = ({ children }: { children: React.ReactNode }) => {
+const TransactionContext = createContext<TransactionContextType | undefined>(undefined);
+
+export const TransactionProvider = ({ children }: { children: ReactNode }) => {
   const queryClient = useQueryClient();
 
-  const { data: transactions, isLoading } = useQuery<Transaction[]>('transactions', () =>
-    Promise.resolve([]) // Initial empty array
-  );
+  const { data: transactions, isLoading } = useQuery<Transaction[]>('transactions', fetchTransactions);
 
-  const mutation = useMutation((newTransactions: Transaction[]) => {
-    return Promise.resolve(newTransactions);
-  }, {
-    onSuccess: (newTransactions) => {
-      queryClient.setQueryData('transactions', (old: Transaction[] | undefined) => {
-        return [...(old || []), ...newTransactions];
-      });
+  const mutation = useMutation(postTransactions, {
+    onSuccess: () => {
+      queryClient.invalidateQueries('transactions');
     }
   });
 
@@ -36,6 +38,11 @@ export const TransactionProvider = ({ children }: { children: React.ReactNode })
   );
 };
 
-export const useTransactions = () => {
-  return useContext(TransactionContext);
+//eslint-disable-next-line
+export const useTransactions = (): TransactionContextType => {
+  const context = useContext(TransactionContext);
+  if (!context) {
+    throw new Error('useTransactions must be used within a TransactionProvider');
+  }
+  return context;
 };

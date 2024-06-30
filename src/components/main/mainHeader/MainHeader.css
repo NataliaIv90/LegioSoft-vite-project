@@ -1,0 +1,35 @@
+.modal {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  background-color: #d3d3d355;
+}
+
+.modal-content {
+  width: 500px;
+  height: 200px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 15px;
+}
+
+.modal-input {
+  margin-bottom: 20px;
+}
+
+.main-header-btns {
+  display: flex;
+  justify-content: center;
+  gap: 50px;
+}
+
+.btn {
+  padding: 7px 12px;
+  width: 200px;
+}
