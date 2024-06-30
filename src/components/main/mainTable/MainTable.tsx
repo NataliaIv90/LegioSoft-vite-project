@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Thead, Tbody, Tr, Th, Td, Button } from '@chakra-ui/react';
-import { useQuery } from 'react-query';
+import { Table, Thead, Tbody, Tr, Th, Td, Button, useToast } from '@chakra-ui/react';
+import { useQuery, useQueryClient } from 'react-query';
 import './MainTable.css';
 
 const fetchTransactions = async () => {
@@ -28,15 +28,13 @@ interface Props {
   setDataToExport: React.Dispatch<React.SetStateAction<IServerTransactionData[]>>;
 }
 
-export const MainTable: React.FC<Props> = ({ selectedStatus, selectedType, currentPage, itemsPerPage, setTotalItemsNumber, setDataToExport }) => {
-  const { data: transactions, isLoading, error } = useQuery<IServerTransactionData[]>('transactions', fetchTransactions);
+export const MainTable: React.FC<Props> = ({ selectedStatus, selectedType, setTotalItemsNumber, setDataToExport }) => {
+  const { data: transactions, isLoading, error, refetch } = useQuery<IServerTransactionData[]>('transactions', fetchTransactions);
+  const queryClient = useQueryClient();
   const [sortBy, setSortBy] = useState<string>('');
   const [sortAsc, setSortAsc] = useState<boolean>(true);
   const [filteredTransactions, setFilteredTransactions] = useState<IServerTransactionData[]>([]);
-
-  const handleEditItem = (id: number) => alert(id);
-
-  const handleRemoveItem = (id: number) => alert(id);
+  const toast = useToast();
 
   useEffect(() => {
     if (transactions) {
@@ -52,30 +50,32 @@ export const MainTable: React.FC<Props> = ({ selectedStatus, selectedType, curre
   }, [transactions, selectedStatus, selectedType, setTotalItemsNumber, setDataToExport]);
 
   const handleSort = (column: string) => {
-    if (column === sortBy) {
-      setSortAsc(!sortAsc);
-    } else {
-      setSortBy(column);
-      setSortAsc(true);
+    setSortAsc(sortBy === column ? !sortAsc : true);
+    setSortBy(column);
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`http://localhost:4000/transactions/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        throw new Error('Failed to delete transaction');
+      }
+      queryClient.invalidateQueries('transactions');
+      refetch();
+    } catch (error) {
+      toast({
+        title: String(error) || 'Error deleting item',
+        position: 'top-right',
+        isClosable: true,
+        status: 'error',
+      })
     }
   };
 
-  const sortedTransactions = [...filteredTransactions].sort((a, b) => {
-    if (sortBy === 'status') {
-      return sortAsc ? a.status.localeCompare(b.status) : b.status.localeCompare(a.status);
-    } else if (sortBy === 'type') {
-      return sortAsc ? a.type.localeCompare(b.type) : b.type.localeCompare(a.type);
-    } else if (sortBy === 'clientName') {
-      return sortAsc ? a.clientName.localeCompare(b.clientName) : b.clientName.localeCompare(a.clientName);
-    }
-    return 0;
-  });
-
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedTransactions = sortedTransactions.slice(startIndex, startIndex + itemsPerPage);
 
   if (isLoading) return <div>Loading...</div>;
-
   if (error) return <div>Error: {JSON.stringify(error)}</div>;
 
   return (
@@ -97,23 +97,28 @@ export const MainTable: React.FC<Props> = ({ selectedStatus, selectedType, curre
               Client Name {sortBy === 'clientName' && (sortAsc ? '▲' : '▼')}
             </Button>
           </Th>
-          <Th>
-            Amount
-          </Th>
+          <Th>Amount</Th>
           <Th>Actions</Th>
         </Tr>
       </Thead>
       <Tbody>
-        {paginatedTransactions.length ? (
-          paginatedTransactions.map((transaction: IServerTransactionData) => (
+        {filteredTransactions.length ? (
+          filteredTransactions.map((transaction: IServerTransactionData) => (
             <Tr key={transaction.id}>
               <Td>{transaction.status}</Td>
               <Td>{transaction.type}</Td>
               <Td>{transaction.clientName}</Td>
               <Td>{transaction.amount}</Td>
               <Td>
-                <Button sx={{ border: 'none' }} variant='ghost' onClick={() => handleEditItem(transaction.id)}>Edit</Button>
-                <Button sx={{ border: 'none' }} variant='ghost' colorScheme='red' onClick={() => handleRemoveItem(transaction.id)}>Delete</Button>
+                <Button sx={{ border: 'none' }} variant='ghost' onClick={() => alert(transaction.id)}>Edit</Button>
+                <Button
+                  sx={{ border: 'none' }}
+                  variant='ghost'
+                  colorScheme='red'
+                  onClick={() => handleDelete(transaction.id)}
+                >
+                  Delete
+                </Button>
               </Td>
             </Tr>
           ))

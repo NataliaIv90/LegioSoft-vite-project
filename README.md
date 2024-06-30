@@ -1,30 +1,67 @@
-# React + TypeScript + Vite
+# React test case
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+- [Link to the task](https://github.com/emleonid/test-case-react/)
 
-Currently, two official plugins are available:
+## Overview
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+This project is a React application built with Vite, designed for managing transactions. It includes features for importing transactions from CSV files, filtering and displaying transaction data, and exporting filtered data back to CSV format.
 
-## Expanding the ESLint configuration
+## Prerequisites
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+Before starting, ensure you have Node.js and npm installed.
 
-- Configure the top-level `parserOptions` property like this:
+## Installation
 
-```js
-export default {
-  // other rules...
-  parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-  },
-}
-```
+### Clone the repository:
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+- git clone https://github.com/NataliaIv90/LegioSoft-vite-project.git
+- cd LegioSoft-vite-project
+
+### Install dependencies:
+
+npm install
+
+## Scripts
+
+- dev: Runs Vite in development mode.
+- build: Builds the TypeScript files and then runs Vite to build the application for production.
+- lint: Lints TypeScript and TypeScript React files using ESLint.
+- preview: Previews the production build of the application locally.
+- start: Starts the server with the compiled TypeScript code.
+
+## Usage
+
+To start the development server:
+
+- npm run dev
+- Open http://localhost:5173 to view it in the browser.
+
+To start the backend server:
+
+- copy server.js from src/ folder to the dist/ folder
+- npm start
+- Open http://localhost:4000 to view it in the browser.
+
+## Components
+
+📗 Main. The Main component is the main entry point of the application, rendering the header, table, and pagination components. It manages state for filtering transactions based on status and type, current page, items per page, and data to export.
+
+📗 MainHeader. The MainHeader component handles file upload for importing transactions, filtering by status and type, and exporting filtered data to CSV format.
+
+📗 MainTable. The MainTable component displays transaction data in a table format. It fetches transactions from the server using react-query, allows sorting by columns, filtering by status and type, and supports deletion of transactions.
+
+## Technologies Used
+
+### Frontend:
+
+- React
+- Chakra UI for styling
+- react-query for data fetching and state management
+- TypeScript for type safety
+- Vite for fast build and development
+- papaparse for CSV parsing
+
+### Backend:
+
+- Express.js for server-side logic
+- SQLite3 for database management

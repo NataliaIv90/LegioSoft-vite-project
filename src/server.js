@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express from 'express';
 import sqlite3 from 'sqlite3';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -16,7 +16,7 @@ db.serialize(() => {
 });
 
 // Get all transactions
-app.get('/transactions', (_, res: Response) => {
+app.get('/transactions', (req, res) => {
   db.all('SELECT * FROM transactions', (err, rows) => {
     if (err) {
       res.status(400).json({ error: err.message });
@@ -27,11 +27,11 @@ app.get('/transactions', (_, res: Response) => {
 });
 
 // Insert new transactions
-app.post('/transactions', (req: Request, res: Response) => {
+app.post('/transactions', (req, res) => {
   const { transactions } = req.body;
   const stmt = db.prepare('INSERT INTO transactions (status, type, clientName, amount) VALUES (?, ?, ?, ?)');
 
-  transactions.forEach((tx: { status: string, type: string, clientName: string, amount: number }) => {
+  transactions.forEach((tx) => {
     stmt.run(tx.status, tx.type, tx.clientName, tx.amount);
   });
 

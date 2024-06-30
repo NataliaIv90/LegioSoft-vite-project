@@ -72,12 +72,16 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       link.click();
       document.body.removeChild(link);
     } else {
-      console.error('CSV export is not supported in this browser.');
+      toast({
+        title: "CSV export is not supported in this browser.",
+        position: 'top-right',
+        isClosable: true,
+        status: 'error',
+      });
     }
   };
 
   const convertToCSV = (data: IServerTransactionData[]) => {
-    // Ensure dataToExport[0] is defined before mapping over its keys
     const header = dataToExport.length > 0 ? Object.keys(dataToExport[0]) as (keyof IServerTransactionData)[] : [];
     const csv = [
       header.join(','),
@@ -106,7 +110,6 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
 
       parse(file, {
         complete: (result) => {
-          console.log('Parsed CSV:', result.data);
           //eslint-disable-next-line
           const transactions = result.data.map((tx: any) => ({
             id: tx.TransactionId,
@@ -130,7 +133,7 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       onTypeChange('');
       onClose();
       onUpload();
-      setFile(null); // Reset the file input after upload
+      setFile(null);
     }
   };
 
@@ -171,7 +174,6 @@ export const MainHeader: React.FC<MainHeaderProps> = ({
       <Button className='btn' onClick={onOpen}>Import</Button>
       <Button className='btn' onClick={() => setShowModal(true)}>Export</Button>
 
-      {/* Modal for column selection */}
       <Modal isOpen={showModal} onClose={() => setShowModal(false)}>
         <ModalOverlay />
         <ModalContent>

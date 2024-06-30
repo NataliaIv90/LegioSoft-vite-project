@@ -11,9 +11,14 @@ interface PaginationProps {
 export const Pagination: React.FC<PaginationProps> = ({ currentPage, itemsPerPage = 10, totalItems, onPageChange }) => {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-    if (!totalItems) return;
+    if (!totalItems) return null;
+
+    // Determine the start and end pages
+    const startPage = Math.max(1, currentPage - 1);
+    const endPage = Math.min(totalPages, currentPage + 1);
+
     return (
-        <ButtonGroup variant="outline" spacing="6" className="pagination">
+        <ButtonGroup variant="outline" spacing="2" className="pagination">
             <Button
                 onClick={() => onPageChange(1)} isDisabled={currentPage === 1}>First</Button>
             <Button
@@ -25,27 +30,51 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, itemsPerPag
                 Previous
             </Button>
 
-            {Array.from({ length: totalPages }, (_, index) => (
+            {startPage > 1 && (
                 <Button
-                    key={index + 1}
-                    onClick={() => onPageChange(index + 1)}
-                    isDisabled={currentPage === index + 1}
-                    isActive={currentPage === index + 1}
+                    onClick={() => onPageChange(1)}
                 >
-                    {index + 1}
+                    1
+                </Button>
+            )}
+
+            {startPage > 2 && <span>...</span>}
+
+            {Array.from({ length: endPage - startPage + 1 }, (_, index) => (
+                <Button
+                    key={startPage + index}
+                    onClick={() => onPageChange(startPage + index)}
+                    isDisabled={currentPage === startPage + index}
+                    isActive={currentPage === startPage + index}
+                >
+                    {startPage + index}
                 </Button>
             ))}
+
+            {endPage < totalPages - 1 && <span>...</span>}
+
+            {endPage < totalPages && (
+                <Button
+                    onClick={() => onPageChange(totalPages)}
+                >
+                    {totalPages}
+                </Button>
+            )}
 
             <Button
                 onClick={() => {
                     if (currentPage < totalPages) onPageChange(currentPage + 1)
                 }}
                 isDisabled={currentPage === totalPages}
-            >Next</Button>
+            >
+                Next
+            </Button>
             <Button
                 onClick={() => onPageChange(totalPages)}
                 isDisabled={currentPage === totalPages}
-            >Last</Button>
+            >
+                Last
+            </Button>
         </ButtonGroup>
     );
 };
