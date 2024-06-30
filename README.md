@@ -4,7 +4,15 @@
 
 ## Overview
 
-This project is a React application built with Vite, designed for managing transactions. It includes features for importing transactions from CSV files, filtering and displaying transaction data, and exporting filtered data back to CSV format.
+This project is a React application built with Vite, designed for managing transactions.
+
+It includes features for:
+
+- importing transactions from CSV files,
+- filtering transaction data,
+- sorting transaction data,
+- displaying transaction data,
+- exporting filtered data back to CSV format.
 
 ## Prerequisites
 
@@ -65,3 +73,9 @@ To start the backend server:
 
 - Express.js for server-side logic
 - SQLite3 for database management
+
+## Screenshots:
+
+![reference](image.png)
+
+![alt text](image-1.png)
